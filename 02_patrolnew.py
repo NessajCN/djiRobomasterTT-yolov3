@@ -56,6 +56,11 @@ def write(x, img):
     cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1);
     return img
 
+# def labelname(x, img):
+#     cls = int(x[-1])
+#     label = "{0}".format(classes[cls])
+#     return label
+
 def arg_parse():
     """
     Parse arguements to the detect module
@@ -119,8 +124,8 @@ if __name__ == '__main__':
     print("Drone battery soc: {0}".format(battery_info))
 
     # start motor spinning
-    # tl_flight = tl_drone.flight
-    # tl_flight.motor_on()
+    tl_flight = tl_drone.flight
+    tl_flight.motor_on()
 
     # initialize the camera
     tl_camera = tl_drone.camera
@@ -138,112 +143,113 @@ if __name__ == '__main__':
     # assert cap.isOpened(), 'Cannot capture source'
 
     while (True):
-        ret = 1
-        frame = tl_camera.read_video_frame(strategy="newest")
-        if ret:
-            
-            img, orig_im, dim = prep_image(frame, inp_dim)
-            output = model(Variable(img), CUDA)
-            output = write_results(output, confidence, num_classes, nms = True, nms_conf = nms_thesh)
+        frame = tl_camera.read_video_frame(strategy="newest")            
+        img, orig_im, dim = prep_image(frame, inp_dim)
+        output = model(Variable(img), CUDA)
+        output = write_results(output, confidence, num_classes, nms = True, nms_conf = nms_thesh)
 
-            if type(output) == int:
-                frames += 1
-                print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
-                cv2.imshow("frame", orig_im)
-                key = cv2.waitKey(1)
-                if key & 0xFF == ord('q'):
-                    break
-                continue
-                    
-            output[:,1:5] = torch.clamp(output[:,1:5], 0.0, float(inp_dim))/inp_dim
-            
-#            im_dim = im_dim.repeat(output.size(0), 1)
-            output[:,[1,3]] *= frame.shape[1]
-            output[:,[2,4]] *= frame.shape[0]
-
-            
-            classes = load_classes('data/coco.names')
-            colors = pkl.load(open("pallete", "rb"))
-            
-            list(map(lambda x: write(x, orig_im), output))
-
-            # start patrol
-            i += 1
-            if i == 1:
-                flight_action = tl_flight.takeoff()
-                cv2.imshow("frame", orig_im)
-            # 前进300cm
-            elif i == 20:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=400, y=0, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            # 右移200cm
-            elif i == 50:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=0, y=-150, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            # 后退300cm
-            elif i == 70:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=-400, y=0, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            # 右移200cm
-            elif i == 100:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=0, y=-150, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            # 前进300cm
-            elif i == 120:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=400, y=0, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            # 右移200cm
-            elif i == 150:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=0, y=-150, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            # 后退300cm
-            elif i == 170:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=-400, y=0, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            # 左移600cm
-            elif i == 200:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=0, y=450, z=0, speed=60)
-                cv2.imshow("frame", orig_im)
-            
-            # look for nearest mid card 
-            elif i == 230:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.go(x=0, y=0, z=100, speed=40, mid1="m-2")
-                cv2.imshow("frame", orig_im)
-
-            # 降落
-            elif i == 250:
-                flight_action.wait_for_completed()
-                flight_action = tl_flight.land()
-                cv2.imshow("frame", orig_im)
-            else:
-                cv2.imshow("frame", orig_im)
-            # 向前飞50厘米，向后飞50厘米
-            # tl_flight.forward(distance=50).wait_for_completed()
-            # tl_flight.backward(distance=50).wait_for_completed()
-
-            # Action End
-
-            
-            
-            # cv2.imshow("frame", orig_im)
+        if type(output) == int:
+            frames += 1
+            print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
+            cv2.imshow("frame", orig_im)
             key = cv2.waitKey(1)
             if key & 0xFF == ord('q'):
                 break
-            frames += 1
-            print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
-            
-        else:
-            break   
+            continue
+                
+        output[:,1:5] = torch.clamp(output[:,1:5], 0.0, float(inp_dim))/inp_dim
+        
+#       im_dim = im_dim.repeat(output.size(0), 1)
+        output[:,[1,3]] *= frame.shape[1]
+        output[:,[2,4]] *= frame.shape[0]
 
+        
+        classes = load_classes('data/coco.names')
+        colors = pkl.load(open("pallete", "rb"))
+        
+        list(map(lambda x: write(x, orig_im), output))
+        # lablename = list(map(lambda x: labelname(x, orig_im), output))
+
+        # start patrol
+        if orig_im.label == "fire" :
+            flight_action = tl_flight.stop()
+            cv2.imshow("frame", orig_im)
+            key = cv2.waitKey(1)
+            if key & 0xFF == ord('q'):
+                break
+            continue
+
+        i += 1
+        if i == 1:
+            flight_action = tl_flight.takeoff()
+            cv2.imshow("frame", orig_im)
+        # 前进300cm
+        elif i == 20:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=400, y=0, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        # 右移200cm
+        elif i == 50:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=-150, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        # 后退300cm
+        elif i == 70:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=-400, y=0, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        # 右移200cm
+        elif i == 100:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=-150, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        # 前进300cm
+        elif i == 120:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=400, y=0, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        # 右移200cm
+        elif i == 150:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=-150, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        # 后退300cm
+        elif i == 170:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=-400, y=0, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        # 左移600cm
+        elif i == 200:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=450, z=0, speed=60)
+            cv2.imshow("frame", orig_im)
+        
+        # look for nearest mid card 
+        elif i == 230:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=0, z=100, speed=40, mid1="m-2")
+            cv2.imshow("frame", orig_im)
+
+        # 降落
+        elif i == 250:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.land()
+            cv2.imshow("frame", orig_im)
+        else:
+            cv2.imshow("frame", orig_im)
+        # 向前飞50厘米，向后飞50厘米
+        # tl_flight.forward(distance=50).wait_for_completed()
+        # tl_flight.backward(distance=50).wait_for_completed()
+
+        # Action End
+        
+        # cv2.imshow("frame", orig_im)
+        key = cv2.waitKey(1)
+        if key & 0xFF == ord('q'):
+            break
+        frames += 1
+        print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
+        
     # for i in range(0, 302):
     #     img = tl_camera.read_cv2_image()
     #     cv2.imshow("Drone", img)
