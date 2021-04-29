@@ -171,7 +171,10 @@ if __name__ == '__main__':
         # lablename = list(map(lambda x: labelname(x, orig_im), output))
 
         # start patrol
-        if orig_im.label == "fire" :
+
+        labelclass = int(output[-1])
+        labelname = "{0}".format(classes[labelclass])
+        if labelname == "fire" :
             flight_action = tl_flight.stop()
             cv2.imshow("frame", orig_im)
             key = cv2.waitKey(1)
@@ -183,6 +186,7 @@ if __name__ == '__main__':
         if i == 1:
             flight_action = tl_flight.takeoff()
             cv2.imshow("frame", orig_im)
+            
         # 前进300cm
         elif i == 20:
             flight_action.wait_for_completed()
