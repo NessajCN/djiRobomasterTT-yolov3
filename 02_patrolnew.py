@@ -172,15 +172,15 @@ if __name__ == '__main__':
 
         # start patrol
 
-        labelclass = int(output[-1])
-        labelname = "{0}".format(classes[labelclass])
-        if labelname == "fire" :
-            flight_action = tl_flight.stop()
-            cv2.imshow("frame", orig_im)
-            key = cv2.waitKey(1)
-            if key & 0xFF == ord('q'):
-                break
-            continue
+        # labelclass = int(output[-1])
+        # labelname = "{0}".format(classes[labelclass])
+        # if labelname == "fire" :
+        #     flight_action = tl_flight.stop()
+        #     cv2.imshow("frame", orig_im)
+        #     key = cv2.waitKey(1)
+        #     if key & 0xFF == ord('q'):
+        #         break
+        #     continue
 
         i += 1
         if i == 1:
@@ -231,7 +231,7 @@ if __name__ == '__main__':
         # look for nearest mid card 
         elif i == 230:
             flight_action.wait_for_completed()
-            flight_action = tl_flight.go(x=0, y=0, z=100, speed=40, mid1="m-2")
+            flight_action = tl_flight.go(x=0, y=0, z=100, speed=40, mid="m-2")
             cv2.imshow("frame", orig_im)
 
         # 降落
