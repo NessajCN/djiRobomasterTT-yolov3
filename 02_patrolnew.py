@@ -253,6 +253,11 @@ if __name__ == '__main__':
             flight_action.wait_for_completed()
             flight_action = tl_flight.land()
             cv2.imshow("frame", orig_im)
+
+        elif i == 310:
+            flight_action.wait_for_completed()
+            break
+
         else:
             cv2.imshow("frame", orig_im)
         # 向前飞50厘米，向后飞50厘米
@@ -274,7 +279,7 @@ if __name__ == '__main__':
     #     cv2.waitKey(1)
     cv2.destroyAllWindows()
     tl_camera.stop_video_stream()
-    
+
     # 关闭挑战卡检测
     tl_flight.mission_pad_off()
 
