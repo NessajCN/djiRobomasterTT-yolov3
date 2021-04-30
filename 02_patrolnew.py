@@ -56,10 +56,10 @@ def write(x, img):
     cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1);
     return img
 
-# def labelname(x, img):
-#     cls = int(x[-1])
-#     label = "{0}".format(classes[cls])
-#     return label
+def labelname(x):
+    cls = int(x[-1])
+    label = "{0}".format(classes[cls])
+    return label
 
 def arg_parse():
     """
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     # assert cap.isOpened(), 'Cannot capture source'
 
     # fill in your lan address:
-    robomaster.config.LOCAL_IP_STR = "192.168.10.3"
+    robomaster.config.LOCAL_IP_STR = "192.168.10.2"
     # robomaster.config.ROBOT_IP_STR = "192.168.31.143"
     # robomaster.config.DEFAULT_CONN_TYPE = "sta"
     tl_drone = robot.Drone()
@@ -129,7 +129,6 @@ if __name__ == '__main__':
 
     # 打开挑战卡检测
     tl_flight.mission_pad_on()
-
 
     # initialize the camera
     tl_camera = tl_drone.camera
@@ -167,24 +166,24 @@ if __name__ == '__main__':
         output[:,[1,3]] *= frame.shape[1]
         output[:,[2,4]] *= frame.shape[0]
 
-        
+        # print(output)
+
         classes = load_classes('data/coco.names')
         colors = pkl.load(open("pallete", "rb"))
         
         list(map(lambda x: write(x, orig_im), output))
-        # lablename = list(map(lambda x: labelname(x, orig_im), output))
+        lbl = list(map(lambda x: labelname(x), output))
+        # print(lbl)
 
         # start patrol
 
-        # labelclass = int(output[-1])
-        # labelname = "{0}".format(classes[labelclass])
-        # if labelname == "fire" :
-        #     flight_action = tl_flight.stop()
-        #     cv2.imshow("frame", orig_im)
-        #     key = cv2.waitKey(1)
-        #     if key & 0xFF == ord('q'):
-        #         break
-        #     continue
+        if "fire hydrant" in lbl:
+            flight_action = tl_flight.stop()
+            cv2.imshow("frame", orig_im)
+            key = cv2.waitKey(1)
+            if key & 0xFF == ord('q'):
+                break
+            continue
 
         i += 1
         if i == 1:
@@ -235,26 +234,21 @@ if __name__ == '__main__':
         # look for nearest mid card 
         elif i == 230:
             flight_action.wait_for_completed()
-            flight_action = tl_flight.go(x=0, y=0, z=100, speed=40, mid="m-2")
+            flight_action = tl_flight.go(x=0, y=0, z=80, speed=40, mid="m-2")
             cv2.imshow("frame", orig_im)
 
         elif i == 250:
-            flight_action.wait_for_completed()
-            flight_action = tl_flight.go(x=0, y=0, z=70, speed=40, mid="m-2")
-            cv2.imshow("frame", orig_im)
-
-        elif i == 270:
             flight_action.wait_for_completed()
             flight_action = tl_flight.go(x=0, y=0, z=40, speed=40, mid="m-2")
             cv2.imshow("frame", orig_im)
 
         # 降落
-        elif i == 290:
+        elif i == 270:
             flight_action.wait_for_completed()
             flight_action = tl_flight.land()
             cv2.imshow("frame", orig_im)
 
-        elif i == 310:
+        elif i == 290:
             flight_action.wait_for_completed()
             break
 

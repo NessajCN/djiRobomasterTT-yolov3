@@ -119,8 +119,8 @@ if __name__ == '__main__':
     print("Drone battery soc: {0}".format(battery_info))
 
     # start motor spinning
-    # tl_flight = tl_drone.flight
-    # tl_flight.motor_on()
+    tl_flight = tl_drone.flight
+    tl_flight.motor_on()
 
     # initialize the camera
     tl_camera = tl_drone.camera
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
     frames = 0
     start = time.time()
-    # i = 0
+    i = 0
 
     # cap = cv2.VideoCapture('udp://192.168.10.1:11111')
     # assert cap.isOpened(), 'Cannot capture source'
@@ -164,16 +164,21 @@ if __name__ == '__main__':
         
         list(map(lambda x: write(x, orig_im), output))
 
-        # # start patrol
-        # i += 1
-        # if i == 1:
-        #     flight_action = tl_flight.takeoff()
-        #     cv2.imshow("frame", orig_im)
-        # # 前进300cm
-        # elif i == 20:
-        #     flight_action.wait_for_completed()
-        #     flight_action = tl_flight.go(x=400, y=0, z=0, speed=60)
-        #     cv2.imshow("frame", orig_im)
+        # start patrol
+        i += 1
+        if i == 1:
+            flight_action = tl_flight.takeoff()
+            cv2.imshow("frame", orig_im)
+        # 前进300cm
+        elif i == 20:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=0, z=100, speed=60, mid="m1")
+            cv2.imshow("frame", orig_im)
+
+        elif i == 40:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=0, z=50, speed=40, mid="m1")
+            cv2.imshow("frame", orig_im)
         # # 右移200cm
         # elif i == 50:
         #     flight_action.wait_for_completed()
@@ -226,6 +231,14 @@ if __name__ == '__main__':
         # # 向前飞50厘米，向后飞50厘米
         # # tl_flight.forward(distance=50).wait_for_completed()
         # # tl_flight.backward(distance=50).wait_for_completed()
+        elif i == 60:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.land()
+            cv2.imshow("frame", orig_im)
+
+        elif i == 80:
+            flight_action.wait_for_completed()
+            break
 
         # # Action End
         
