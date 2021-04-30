@@ -112,7 +112,7 @@ if __name__ == '__main__':
     # assert cap.isOpened(), 'Cannot capture source'
 
     # fill in your lan address:
-    robomaster.config.LOCAL_IP_STR = "192.168.10.2"
+    robomaster.config.LOCAL_IP_STR = "192.168.10.3"
     # robomaster.config.ROBOT_IP_STR = "192.168.31.143"
     # robomaster.config.DEFAULT_CONN_TYPE = "sta"
     tl_drone = robot.Drone()
@@ -126,6 +126,10 @@ if __name__ == '__main__':
     # start motor spinning
     tl_flight = tl_drone.flight
     tl_flight.motor_on()
+
+    # 打开挑战卡检测
+    tl_flight.mission_pad_on()
+
 
     # initialize the camera
     tl_camera = tl_drone.camera
@@ -172,15 +176,15 @@ if __name__ == '__main__':
 
         # start patrol
 
-        labelclass = int(output[-1])
-        labelname = "{0}".format(classes[labelclass])
-        if labelname == "fire" :
-            flight_action = tl_flight.stop()
-            cv2.imshow("frame", orig_im)
-            key = cv2.waitKey(1)
-            if key & 0xFF == ord('q'):
-                break
-            continue
+        # labelclass = int(output[-1])
+        # labelname = "{0}".format(classes[labelclass])
+        # if labelname == "fire" :
+        #     flight_action = tl_flight.stop()
+        #     cv2.imshow("frame", orig_im)
+        #     key = cv2.waitKey(1)
+        #     if key & 0xFF == ord('q'):
+        #         break
+        #     continue
 
         i += 1
         if i == 1:
@@ -231,11 +235,21 @@ if __name__ == '__main__':
         # look for nearest mid card 
         elif i == 230:
             flight_action.wait_for_completed()
-            flight_action = tl_flight.go(x=0, y=0, z=100, speed=40, mid1="m-2")
+            flight_action = tl_flight.go(x=0, y=0, z=100, speed=40, mid="m-2")
+            cv2.imshow("frame", orig_im)
+
+        elif i == 250:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=0, z=70, speed=40, mid="m-2")
+            cv2.imshow("frame", orig_im)
+
+        elif i == 270:
+            flight_action.wait_for_completed()
+            flight_action = tl_flight.go(x=0, y=0, z=40, speed=40, mid="m-2")
             cv2.imshow("frame", orig_im)
 
         # 降落
-        elif i == 250:
+        elif i == 290:
             flight_action.wait_for_completed()
             flight_action = tl_flight.land()
             cv2.imshow("frame", orig_im)
@@ -260,6 +274,9 @@ if __name__ == '__main__':
     #     cv2.waitKey(1)
     cv2.destroyAllWindows()
     tl_camera.stop_video_stream()
+    
+    # 关闭挑战卡检测
+    tl_flight.mission_pad_off()
 
     #stop motor spinning
     # tl_flight.motor_off()
