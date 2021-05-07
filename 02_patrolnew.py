@@ -12,6 +12,7 @@ import pandas as pd
 import random 
 import argparse
 import pickle as pkl
+import netifaces as ni
 
 import robomaster
 from robomaster import robot
@@ -112,7 +113,8 @@ if __name__ == '__main__':
     # assert cap.isOpened(), 'Cannot capture source'
 
     # fill in your lan address:
-    robomaster.config.LOCAL_IP_STR = "192.168.10.2"
+    ni.ifaddresses('wlp2s0')
+    robomaster.config.LOCAL_IP_STR = ni.ifaddresses('wlp2s0')[ni.AF_INET][0]['addr']
     # robomaster.config.ROBOT_IP_STR = "192.168.31.143"
     # robomaster.config.DEFAULT_CONN_TYPE = "sta"
     tl_drone = robot.Drone()
@@ -177,7 +179,7 @@ if __name__ == '__main__':
 
         # start patrol
 
-        if "fire hydrant" in lbl:
+        if "fire" in lbl:
             flight_action = tl_flight.stop()
             cv2.imshow("frame", orig_im)
             key = cv2.waitKey(1)
